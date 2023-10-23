@@ -9,12 +9,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @ApiOperation({ summary: '获取用户' })
   home() {
     return 'User Home ~';
   }
 
-  @ApiOperation({ summary: '创建用户' })
   @Post('/create')
+  @ApiOperation({ summary: '创建用户' })
   async create(@Body() user: CreateUserDto) {
     return await this.userService.create(user);
   }
