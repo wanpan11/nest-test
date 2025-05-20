@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { ProjectModule } from './project/project.module';
 import envConfig from '../config/env';
 
 @Module({
@@ -23,9 +24,11 @@ import envConfig from '../config/env';
         timezone: '+08:00', // 服务器上配置的时区
         synchronize: true, // 根据实体自动创建数据库表， 生产环境建议关闭
         autoLoadEntities: true,
+        // logging: true,
       }),
     }),
     UserModule,
+    ProjectModule,
   ],
   controllers: [],
   providers: [],

@@ -1,22 +1,38 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe } from '@nestjs/common';
+import { NotEmptyObjectPipe } from './pipes/not-empty-object.pipe';
 import { UserService } from './user.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateUserDto } from './dto/create-user.dot';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
-@ApiTags('用户')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get()
-  @ApiOperation({ summary: '获取用户' })
-  home() {
-    return 'User Home ~';
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
 
-  @Post('/create')
-  @ApiOperation({ summary: '创建用户' })
-  async create(@Body() user: CreateUserDto) {
-    return await this.userService.create(user);
+  @Get('all')
+  findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get('select/:id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(+id);
+  }
+
+  @Post('update/:id')
+  update(
+    @Param('id') id: string,
+    @Body(ValidationPipe, NotEmptyObjectPipe) updateUserDto: UpdateUserDto
+  ) {
+    return this.userService.update(+id, updateUserDto);
+  }
+
+  @Get('del/:id')
+  remove(@Param('id') id: string) {
+    return this.userService.remove(+id);
   }
 }
