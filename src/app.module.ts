@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigService, ConfigModule } from '@nestjs/config';
-import { UserModule } from './user/user.module';
-import { ProjectModule } from './project/project.module';
+
 import envConfig from '../config/env';
+import { ProjectModule } from './project/project.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

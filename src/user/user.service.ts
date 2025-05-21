@@ -1,9 +1,11 @@
+import { Repository } from 'typeorm';
+
 import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -32,7 +34,6 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-   
     if (!updateUserDto) {
       throw new HttpException('参数不能为空', 401);
     }

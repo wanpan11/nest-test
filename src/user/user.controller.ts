@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, UsePipes, ValidationPipe } from '@nestjs/common';
-import { NotEmptyObjectPipe } from './pipes/not-empty-object.pipe';
-import { UserService } from './user.service';
+import { Body, Controller, Get, Param, Post, ValidationPipe } from '@nestjs/common';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { NotEmptyObjectPipe } from './pipes/not-empty-object.pipe';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -26,7 +27,7 @@ export class UserController {
   @Post('update/:id')
   update(
     @Param('id') id: string,
-    @Body(ValidationPipe, NotEmptyObjectPipe) updateUserDto: UpdateUserDto
+    @Body(ValidationPipe, NotEmptyObjectPipe) updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update(+id, updateUserDto);
   }
