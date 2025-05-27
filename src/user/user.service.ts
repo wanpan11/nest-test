@@ -1,6 +1,7 @@
+import { RedisClientType } from 'redis';
 import { Repository } from 'typeorm';
 
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -10,8 +11,8 @@ import { UserEntity } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -29,8 +30,16 @@ export class UserService {
     return this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    const cache = (await this.redisClient.get(`user:${id}`)) as string;
+
+    if (cache) {
+      return JSON.parse(cache);
+    } else {
+      const user = await this.userRepository.findOne({ where: { id } });
+      this.redisClient.set(`user:${id}`, JSON.stringify(user));
+      return user;
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
