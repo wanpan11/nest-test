@@ -9,18 +9,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const exceptionResponse: any = exception.getResponse();
     let validMessage = '';
 
-    for (const key in exception) {
-      console.log('exception ===>', key, exception[key]);
-    }
     if (typeof exceptionResponse === 'object') {
       validMessage =
         typeof exceptionResponse.message === 'string'
           ? exceptionResponse.message
           : exceptionResponse.message[0];
     }
+
     const message = exception.message
       ? exception.message
       : `${status >= 500 ? 'Service Error' : 'Client Error'}`;
+
     const errorResponse = {
       data: {},
       message: validMessage || message,

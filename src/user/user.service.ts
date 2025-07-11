@@ -16,9 +16,9 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { name } = createUserDto;
+    const { username } = createUserDto;
 
-    const userExist = await this.userRepository.findOne({ where: { name } });
+    const userExist = await this.userRepository.findOne({ where: { username } });
     if (userExist) {
       throw new HttpException('用户已存在', 401);
     }
