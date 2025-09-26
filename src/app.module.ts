@@ -4,11 +4,11 @@ import { Module } from '@nestjs/common';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 // import envConfig from '../config/env';
-import { ApiModule } from './api/api.module';
-
+import { ApiModule } from './api-test/api.module';
 // import { UserEntity } from './user/entities/user.entity';
 // import { UserModule } from './user/user.module';
 // import { websiteModule } from './website/website.module';
+import { WeChatModule } from './we-chat/we-chat.module';
 
 @Module({
   imports: [
@@ -33,6 +33,7 @@ import { ApiModule } from './api/api.module';
     // UserModule,
     // websiteModule,
     ApiModule,
+    WeChatModule,
   ],
   controllers: [],
   providers: [],
