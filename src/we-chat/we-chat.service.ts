@@ -18,12 +18,19 @@ export class WeChatService {
   async getToken(params: WxTokenRequest) {
     try {
       const { data } = await axios.get<WxTokenResponse>(wxApi.getToken, {
-        params: { appid: wxApi.appId, secret: wxApi.appsecret, grant_type: 'client_credential' },
+        params: {
+          appid: wxApi.appId,
+          secret: wxApi.appsecret,
+          grant_type: 'client_credential',
+        },
       });
 
-      const { data: ticketData } = await axios.get<WxTicketResponse>(wxApi.getTicket, {
-        params: { access_token: data.access_token, type: 'jsapi' },
-      });
+      const { data: ticketData } = await axios.get<WxTicketResponse>(
+        wxApi.getTicket,
+        {
+          params: { access_token: data.access_token, type: 'jsapi' },
+        },
+      );
 
       // 微信官方签名参数：jsapi_ticket, nonceStr, timestamp, url
       const ticket = ticketData?.ticket;

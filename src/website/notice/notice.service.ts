@@ -10,7 +10,8 @@ import { NoticeEntity } from './entities/notice.entity';
 @Injectable()
 export class NoticeService {
   constructor(
-    @InjectRepository(NoticeEntity) private readonly noticeRepository: Repository<NoticeEntity>,
+    @InjectRepository(NoticeEntity)
+    private readonly noticeRepository: Repository<NoticeEntity>,
   ) {}
 
   async create(createNoticeDto: CreateNoticeDto) {
@@ -30,7 +31,10 @@ export class NoticeService {
     return await this.noticeRepository.findOneOrFail({ where: { id } });
   }
 
-  async update(id: number, updateNoticeDto: UpdateNoticeDto): Promise<NoticeEntity> {
+  async update(
+    id: number,
+    updateNoticeDto: UpdateNoticeDto,
+  ): Promise<NoticeEntity> {
     await this.noticeRepository.update(id, updateNoticeDto);
     return await this.findOne(id);
   }

@@ -10,7 +10,7 @@ import { NoticeModule } from './notice/notice.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get('DB_HOST'),
         port: configService.get<number>('DB_PORT'),

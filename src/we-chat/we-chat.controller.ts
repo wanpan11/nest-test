@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 
-import { WxTokenRequest } from './interface';
+import type { WxTokenRequest } from './interface';
 import { WeChatService } from './we-chat.service';
 
 @Controller('weChat')

@@ -1,4 +1,4 @@
-import { RedisClientType } from 'redis';
+import type { RedisClientType } from 'redis';
 import { Repository } from 'typeorm';
 
 import { HttpException, Inject, Injectable } from '@nestjs/common';
@@ -11,14 +11,17 @@ import { UserEntity } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
     @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
     const { username } = createUserDto;
 
-    const userExist = await this.userRepository.findOne({ where: { username } });
+    const userExist = await this.userRepository.findOne({
+      where: { username },
+    });
     if (userExist) {
       throw new HttpException('用户已存在', 401);
     }
@@ -37,7 +40,7 @@ export class UserService {
       return JSON.parse(cache);
     } else {
       const user = await this.userRepository.findOne({ where: { id } });
-      this.redisClient.set(`user:${id}`, JSON.stringify(user));
+      await this.redisClient.set(`user:${id}`, JSON.stringify(user));
       return user;
     }
   }
