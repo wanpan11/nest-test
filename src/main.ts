@@ -1,29 +1,17 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './core/filter/http-exception/http-exception.filter';
-import { TransformInterceptor } from './core/interceptor/transform/transform.interceptor';
+import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors(); // 全局允许跨域
-  app.setGlobalPrefix('api');
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(new TransformInterceptor());
+  app.setGlobalPrefix('api'); // 设置全局前缀
 
-  app.useGlobalPipes(new ValidationPipe());
-
-  // 设置swagger文档
-  const config = new DocumentBuilder()
-    .setTitle('管理后台')
-    .setDescription('管理后台接口文档')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  app.useGlobalPipes(new ValidationPipe({ transform: true })); // 全局管道
+  app.useStaticAssets(join(__dirname, '../uploads'), { prefix: '/uploads' }); // 静态资源
 
   await app.listen(3000);
 }

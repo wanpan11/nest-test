@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 
+import { WeChatModule } from './we-chat/we-chat.module';
 import { UserModule } from './user/user.module';
-import { DbModule } from './db/db.module';
-import { BookModule } from './book/book.module';
 
 @Module({
-  imports: [UserModule, DbModule, BookModule],
+  imports: [UserModule, WeChatModule],
   controllers: [],
   providers: [],
 })

@@ -1,70 +1,49 @@
-import type { RedisClientType } from 'redis';
-import { Repository } from 'typeorm';
-
-import { HttpException, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserEntity } from './entities/user.entity';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { DbService } from 'src/db/db.service';
+import { User } from './entities/user.entity';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
-  ) {}
+  @Inject(DbService)
+  dbService: DbService;
 
-  async create(createUserDto: CreateUserDto) {
-    const { username } = createUserDto;
+  async register(registerUserDto: RegisterUserDto) {
+    const users: User[] = await this.dbService.read();
 
-    const userExist = await this.userRepository.findOne({
-      where: { username },
-    });
-    if (userExist) {
-      throw new HttpException('用户已存在', 401);
+    const foundUser = users.find(
+      (item) => item.username === registerUserDto.username,
+    );
+
+    if (foundUser) {
+      throw new BadRequestException('该用户已经注册');
     }
 
-    return await this.userRepository.save(createUserDto);
+    const user = new User();
+    user.username = registerUserDto.username;
+    user.password = registerUserDto.password;
+    users.push(user);
+
+    await this.dbService.write(users);
+    return user;
   }
 
-  findAll() {
-    return this.userRepository.find();
-  }
+  async login(loginUserDto: LoginUserDto) {
+    const users: User[] = await this.dbService.read();
 
-  async findOne(id: number) {
-    const cache = (await this.redisClient.get(`user:${id}`)) as string;
+    const foundUser = users.find(
+      (item) => item.username === loginUserDto.username,
+    );
 
-    if (cache) {
-      return JSON.parse(cache);
-    } else {
-      const user = await this.userRepository.findOne({ where: { id } });
-      await this.redisClient.set(`user:${id}`, JSON.stringify(user));
-      return user;
-    }
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    if (!updateUserDto) {
-      throw new HttpException('参数不能为空', 401);
+    if (!foundUser) {
+      throw new BadRequestException('用户不存在');
     }
 
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new HttpException('用户不存在', 401);
+    if (foundUser.password !== loginUserDto.password) {
+      throw new BadRequestException('密码不正确');
     }
 
-    return this.userRepository.update(id, updateUserDto);
-  }
-
-  async remove(id: number) {
-    const user = await this.userRepository.findOne({ where: { id } });
-
-    if (!user) {
-      throw new HttpException('用户不存在', 401);
-    }
-
-    return this.userRepository.delete(id);
+    return foundUser;
   }
 }

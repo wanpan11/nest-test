@@ -1,30 +1,11 @@
-import { createClient } from 'redis';
-
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
-import { UserEntity } from './entities/user.entity';
-import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { UserController } from './user.controller';
+import { DbModule } from 'src/db/db.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [DbModule.register({ path: 'db/user.json' })],
   controllers: [UserController],
-  providers: [
-    UserService,
-    {
-      provide: 'REDIS_CLIENT',
-      async useFactory() {
-        const client = createClient({
-          socket: {
-            host: 'localhost', // Redis服务器地址
-            port: 6379, // Redis服务器端口
-          },
-        });
-        await client.connect();
-        return client;
-      },
-    },
-  ],
+  providers: [UserService],
 })
 export class UserModule {}
