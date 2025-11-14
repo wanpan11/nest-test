@@ -8,3 +8,13 @@ export class RegisterUserDto {
   @MinLength(6, { message: '密码最少 6 位' })
   password: string;
 }
+
+export class UpdateUserDto extends RegisterUserDto {
+  @IsNotEmpty({ message: 'id 不能为空' })
+  id: number;
+}
+
+export class LoginUserDto extends RegisterUserDto {
+  @IsNotEmpty({ message: '密码不能为空' })
+  declare password: string;
+}

@@ -1,49 +1,61 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { DbService } from 'src/db/db.service';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { LoginUserDto } from './dto/login-user.dto';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
+import { RegisterUserDto, UpdateUserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
-  @Inject(DbService)
-  dbService: DbService;
+  @InjectEntityManager()
+  private manager: EntityManager;
 
-  async register(registerUserDto: RegisterUserDto) {
-    const users: User[] = await this.dbService.read();
+  async login(loginUserDto: RegisterUserDto) {
+    const user = await this.manager.findOne(User, {
+      where: { username: loginUserDto.username },
+    });
 
-    const foundUser = users.find(
-      (item) => item.username === registerUserDto.username,
-    );
-
-    if (foundUser) {
-      throw new BadRequestException('该用户已经注册');
+    if (!user) {
+      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
 
-    const user = new User();
-    user.username = registerUserDto.username;
-    user.password = registerUserDto.password;
-    users.push(user);
+    if (user.password !== loginUserDto.password) {
+      throw new HttpException('密码错误', HttpStatus.BAD_REQUEST);
+    }
 
-    await this.dbService.write(users);
     return user;
   }
 
-  async login(loginUserDto: LoginUserDto) {
-    const users: User[] = await this.dbService.read();
+  async create(createUserDto: RegisterUserDto) {
+    const user: RegisterUserDto = {
+      username: createUserDto.username,
+      password: createUserDto.password,
+    };
 
-    const foundUser = users.find(
-      (item) => item.username === loginUserDto.username,
-    );
+    const exist = await this.manager.findOne(User, {
+      where: { username: user.username },
+    });
 
-    if (!foundUser) {
-      throw new BadRequestException('用户不存在');
+    if (exist) {
+      throw new HttpException('用户已存在', HttpStatus.BAD_REQUEST);
     }
+    return this.manager.save(User, user);
+  }
 
-    if (foundUser.password !== loginUserDto.password) {
-      throw new BadRequestException('密码不正确');
-    }
+  findAll() {
+    return this.manager.find(User);
+  }
 
-    return foundUser;
+  findOne(id: number) {
+    return this.manager.findOne(User, {
+      where: { id },
+    });
+  }
+
+  update(updateUserDto: UpdateUserDto) {
+    return this.manager.save(User, updateUserDto);
+  }
+
+  remove(id: number) {
+    return this.manager.delete(User, id);
   }
 }
