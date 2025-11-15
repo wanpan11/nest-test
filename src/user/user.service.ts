@@ -1,16 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
-import { RegisterUserDto, UpdateUserDto } from './dto/user.dto';
+import { RegisterUserDto } from './dto/user.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RedisService } from 'src/redis/redis.service';
+import { WINSTON_LOGGER_TOKEN } from 'src/winston/winston.module';
+import { MyLogger } from 'src/winston/MyLogger';
+import { getValidateError } from 'util/index';
 
 @Injectable()
 export class UserService {
-  @InjectEntityManager()
-  private manager: EntityManager;
+  @InjectRepository(User)
+  private userRepository: Repository<User>;
+
+  @Inject(RedisService)
+  private redisService: RedisService;
+
+  @Inject(WINSTON_LOGGER_TOKEN)
+  private logger: MyLogger;
 
   async login(loginUserDto: RegisterUserDto) {
-    const user = await this.manager.findOne(User, {
+    const user = await this.userRepository.findOne({
       where: { username: loginUserDto.username },
     });
 
@@ -25,37 +35,35 @@ export class UserService {
     return user;
   }
 
-  async create(createUserDto: RegisterUserDto) {
-    const user: RegisterUserDto = {
-      username: createUserDto.username,
-      password: createUserDto.password,
-    };
+  async register(user: RegisterUserDto) {
+    const captcha = await this.redisService.get(`captcha_${user.email}`);
 
-    const exist = await this.manager.findOne(User, {
-      where: { username: user.username },
-    });
-
-    if (exist) {
-      throw new HttpException('用户已存在', HttpStatus.BAD_REQUEST);
+    if (!captcha) {
+      getValidateError(user, '验证码已失效');
     }
-    return this.manager.save(User, user);
-  }
+    if (user.captcha !== captcha) {
+      getValidateError(user, '验证码不正确');
+    }
 
-  findAll() {
-    return this.manager.find(User);
-  }
-
-  findOne(id: number) {
-    return this.manager.findOne(User, {
-      where: { id },
+    const foundUser = await this.userRepository.findOneBy({
+      username: user.username,
     });
-  }
+    if (foundUser) {
+      getValidateError(user, '用户已存在');
+    }
 
-  update(updateUserDto: UpdateUserDto) {
-    return this.manager.save(User, updateUserDto);
-  }
+    const newUser = new User();
+    newUser.username = user.username;
+    newUser.password = user.password;
+    newUser.email = user.email;
+    newUser.nickName = user.nickName;
 
-  remove(id: number) {
-    return this.manager.delete(User, id);
+    try {
+      await this.userRepository.save(newUser);
+      return '注册成功';
+    } catch (e) {
+      this.logger.error((e as Error).message, 'UserService');
+      return '注册失败';
+    }
   }
 }

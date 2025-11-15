@@ -11,14 +11,14 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  @Post('register')
-  async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.userService.create(registerUserDto);
-  }
-
   @Post('login')
   async login(@Body() loginUserDto: LoginUserDto) {
     this.logger.log('login', UserController.name);
     return this.userService.login(loginUserDto);
+  }
+
+  @Post('register')
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    return this.userService.register(registerUserDto);
   }
 }
