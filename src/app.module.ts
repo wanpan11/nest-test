@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 
 import { UserModule } from './user/user.module';
-import { DbModule } from './db/db.module';
-import { BookModule } from './book/book.module';
 import {
   WinstonModule,
   WINSTON_DEFAULT_OPTIONS,
@@ -18,7 +16,7 @@ import { User } from './user/entities/user.entity';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: '999999',
+      password: 'wanpan',
       database: 'typeorm_test',
       synchronize: true,
       logging: true,
@@ -30,8 +28,6 @@ import { User } from './user/entities/user.entity';
       },
     }),
     UserModule,
-    DbModule,
-    BookModule,
     WinstonModule,
   ],
   controllers: [],
