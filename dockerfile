@@ -27,3 +27,6 @@ RUN npm install pm2 -g
 EXPOSE 3000
 
 CMD ["pm2-runtime", "/app/src/main.js"]
+
+# cli
+# docker build -t nest:v4 .

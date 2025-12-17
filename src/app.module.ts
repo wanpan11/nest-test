@@ -12,22 +12,28 @@ import { Permission } from './user/entities/permission.entity';
 import { RedisModule } from './redis/redis.module';
 import { TransformInterceptor } from './core/transform.interceptor';
 import { HttpFilterModule } from './core/httpException';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     WinstonModule.forRoot(WINSTON_DEFAULT_OPTIONS),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'wanpan',
-      database: 'public',
-      synchronize: true,
-      logging: true,
-      entities: [User, Role, Permission],
-      poolSize: 10,
-      connectorPackage: 'mysql2',
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USER'),
+        password: configService.get('DB_PASSWD'),
+        database: configService.get('DB_DATABASE'),
+        synchronize: true,
+        logging: true,
+        entities: [User, Role, Permission],
+        poolSize: 10,
+        connectorPackage: 'mysql2',
+      }),
+      inject: [ConfigService],
     }),
     RedisModule,
     UserModule,

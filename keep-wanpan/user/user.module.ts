@@ -17,7 +17,7 @@ import { UserService } from './user.service';
       async useFactory() {
         const client = createClient({
           socket: {
-            host: 'localhost', // Redis服务器地址
+            host: '172.16.38.50', // Redis服务器地址
             port: 6379, // Redis服务器端口
           },
         });
